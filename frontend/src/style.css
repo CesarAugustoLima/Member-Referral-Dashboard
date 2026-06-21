@@ -4,6 +4,6 @@
 
 @layer base {
   body {
-    @apply bg-dark-bg text-gray-primary min-h-screen;
+    @apply bg-dark-bg font-sans text-gray-primary min-h-screen;
   }
 }

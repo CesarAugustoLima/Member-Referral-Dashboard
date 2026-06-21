@@ -1,23 +1,40 @@
 <script setup lang="ts">
-// Import your components here
+import { onMounted } from 'vue'
+
+import AnalyticsCards from './components/AnalyticsCards.vue'
+import InvitationForm from './components/InvitationForm.vue'
+import ReferralsList from './components/ReferralsList.vue'
+import { useReferralsStore } from './stores/referrals'
+
+const store = useReferralsStore()
+
+onMounted(() => {
+  void store.loadDashboard()
+})
 </script>
 
 <template>
-  <div class="min-h-screen bg-dark-bg">
-    <div class="container mx-auto px-4 py-8">
-      <h1 class="text-4xl font-serif text-gray-primary mb-8">
-        Member Referral Dashboard
-      </h1>
+  <div class="container mx-auto max-w-7xl px-4 py-8">
+      <header class="mb-8">
+        <h1 class="font-serif text-4xl text-gray-primary md:text-5xl">
+          Member Referral Dashboard
+        </h1>
+        <p class="mt-2 text-gray-secondary">
+          Invite members, track referrals, and monitor conversion.
+        </p>
+      </header>
 
-      <!-- TODO: Add your components here -->
-      <div class="text-gray-secondary">
-        <p>Build your referral dashboard components here.</p>
-        <p class="mt-2">See REQUIREMENTS.md for feature specifications.</p>
+      <div class="space-y-8">
+        <AnalyticsCards />
+
+        <div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
+          <div class="lg:col-span-1">
+            <InvitationForm />
+          </div>
+          <div class="lg:col-span-2">
+            <ReferralsList />
+          </div>
+        </div>
       </div>
     </div>
-  </div>
 </template>
-
-<style scoped>
-/* Add any component-specific styles here */
-</style>

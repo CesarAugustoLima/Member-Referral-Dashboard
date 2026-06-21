@@ -35,6 +35,11 @@ class ReferralSerializer(serializers.ModelSerializer):
             "created_at",
             "last_sent_at",
         ]
+        extra_kwargs = {
+            # Disable DRF's case-sensitive UniqueValidator; validate_email handles
+            # case-insensitive uniqueness with a clear 409 error message.
+            "email": {"validators": []},
+        }
 
     def validate_email(self, value: str) -> str:
         """Normalize email and enforce case-insensitive uniqueness."""
