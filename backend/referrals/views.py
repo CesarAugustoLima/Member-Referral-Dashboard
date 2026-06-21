@@ -1,8 +1,20 @@
-from rest_framework import viewsets
-from rest_framework.decorators import action
-from rest_framework.response import Response
+"""REST API views for referrals."""
 
-# TODO: Create your API views here
-#
-# Suggested approach:
-# - Use Django REST Framework ViewSets
+import time
+
+from rest_framework import viewsets
+
+from .models import Referral
+from .serializers import ReferralSerializer
+
+
+class ReferralViewSet(viewsets.ModelViewSet):
+    """CRUD endpoints for member referrals."""
+
+    queryset = Referral.objects.all()
+    serializer_class = ReferralSerializer
+
+    def perform_create(self, serializer) -> None:
+        """Simulate sending an invitation email before persisting."""
+        time.sleep(0.5)
+        serializer.save()

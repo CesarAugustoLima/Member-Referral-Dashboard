@@ -1,14 +1,13 @@
-from django.urls import path, include
+"""URL routing for the referrals API."""
+
+from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
-# TODO: Register your viewsets here
-#
-# Example:
-# router = DefaultRouter()
-# router.register(r'', ReferralViewSet, basename='referral')
-#
-# urlpatterns = [
-#     path('', include(router.urls)),
-# ]
+from .views import ReferralViewSet
 
-urlpatterns = []
+router = DefaultRouter()
+router.register(r"", ReferralViewSet, basename="referral")
+
+urlpatterns = [
+    path("", include(router.urls)),
+]
