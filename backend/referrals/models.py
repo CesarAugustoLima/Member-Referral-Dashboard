@@ -7,6 +7,7 @@ from django.utils import timezone
 
 from .services import generate_token
 
+# Must match frontend `src/constants/referral.ts` RESEND_COOLDOWN_SECONDS.
 RESEND_COOLDOWN_SECONDS = 30
 
 

@@ -1,4 +1,4 @@
-const RESEND_COOLDOWN_SECONDS = 30
+import { RESEND_COOLDOWN_SECONDS } from '../constants/referral'
 
 /** Format an ISO timestamp for display. */
 export function formatDate(iso: string): string {

@@ -8,6 +8,7 @@ import {
   getErrorMessage,
   resendReferral as resendReferralRequest,
 } from '../api/referrals'
+import { showToast } from '../composables/useToast'
 import type { Analytics, CreateReferralPayload, Referral } from '../types/referral'
 
 export const useReferralsStore = defineStore('referrals', () => {
@@ -46,6 +47,7 @@ export const useReferralsStore = defineStore('referrals', () => {
     try {
       await createReferralRequest(payload)
       await refreshDashboard()
+      showToast('Invitation sent successfully.')
       return null
     } catch (error) {
       return getErrorMessage(error, 'Unable to send invitation.')
@@ -65,6 +67,7 @@ export const useReferralsStore = defineStore('referrals', () => {
         referral.id === id ? updated : referral,
       )
       analytics.value = await fetchAnalyticsRequest()
+      showToast('Invitation resent successfully.')
     } catch (error) {
       resendErrors.value = {
         ...resendErrors.value,

@@ -20,7 +20,6 @@ const fieldErrors = reactive({
 })
 
 const formError = ref('')
-const successMessage = ref('')
 
 function validateForm(): boolean {
   fieldErrors.first_name = form.first_name.trim() ? '' : 'First name is required.'
@@ -41,7 +40,6 @@ function resetForm(): void {
 
 async function handleSubmit(): Promise<void> {
   formError.value = ''
-  successMessage.value = ''
 
   if (!validateForm()) {
     return
@@ -59,7 +57,6 @@ async function handleSubmit(): Promise<void> {
   }
 
   resetForm()
-  successMessage.value = 'Invitation sent successfully.'
 }
 </script>
 
@@ -124,13 +121,6 @@ async function handleSubmit(): Promise<void> {
 
       <p v-if="formError" class="rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm text-red-300">
         {{ formError }}
-      </p>
-
-      <p
-        v-if="successMessage"
-        class="rounded-lg border border-success/40 bg-success/10 px-3 py-2 text-sm text-success-light"
-      >
-        {{ successMessage }}
       </p>
 
       <button
