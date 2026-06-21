@@ -4,6 +4,18 @@
 
 @layer base {
   body {
-    @apply bg-dark-bg font-sans text-gray-primary min-h-screen;
+    @apply bg-dark-bg font-sans text-gray-primary min-h-screen antialiased;
+  }
+}
+
+@layer components {
+  /* Matches 10east.co copper-button gradient */
+  .btn-copper {
+    @apply rounded-lg font-medium text-white transition disabled:cursor-not-allowed disabled:opacity-60;
+    background: linear-gradient(50deg, #c78b58 1.43%, #956a68 94.28%);
+  }
+
+  .btn-copper:hover:not(:disabled) {
+    filter: brightness(1.06);
   }
 }

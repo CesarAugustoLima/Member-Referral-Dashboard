@@ -7,20 +7,22 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        serif: ['"Playfair Display"', 'Georgia', 'serif'],
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        // 10east.co uses Signifier for display; Amiri is in their stack and on Google Fonts.
+        serif: ['Amiri', 'Georgia', 'serif'],
+        // Primary sans on 10east.co
+        sans: ['"Libre Franklin"', 'Inter', 'system-ui', 'sans-serif'],
       },
       colors: {
-        // brand colors
+        // Brand copper from 10east.co (#B37D4F, gradient #c78b58 → #956a68)
         copper: {
-          DEFAULT: '#C17A5F',
-          light: '#D49580',
-          dark: '#A86249',
+          DEFAULT: '#B37D4F',
+          light: '#C78B58',
+          dark: '#956A68',
         },
         dark: {
-          bg: '#1a1a1a',
-          card: '#2a2a2a',
-          border: '#374151',
+          bg: '#1C1C1C',
+          card: '#272727',
+          border: '#3F3F3F',
         },
         success: {
           DEFAULT: '#10B981',
@@ -28,9 +30,9 @@ export default {
           dark: '#059669',
         },
         gray: {
-          primary: '#FFFFFF',
-          secondary: '#9CA3AF',
-          tertiary: '#6B7280',
+          primary: '#FBFBFB',
+          secondary: '#A3A3A3',
+          tertiary: '#737373',
         },
       },
     },

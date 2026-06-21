@@ -16,11 +16,11 @@ onMounted(() => {
 
 <template>
   <div class="container mx-auto max-w-7xl px-4 py-8">
-    <header class="mb-8">
+    <header class="mb-8 border-b border-dark-border pb-8">
       <h1 class="font-serif text-4xl text-gray-primary md:text-5xl">
         Member Referral Dashboard
       </h1>
-      <p class="mt-2 text-gray-secondary">
+      <p class="mt-3 max-w-2xl text-gray-secondary">
         Invite members, track referrals, and monitor conversion.
       </p>
     </header>

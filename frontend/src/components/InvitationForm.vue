@@ -125,7 +125,7 @@ async function handleSubmit(): Promise<void> {
 
       <button
         type="submit"
-        class="w-full rounded-lg bg-copper px-4 py-2.5 font-medium text-white transition hover:bg-copper-light disabled:cursor-not-allowed disabled:opacity-60"
+        class="btn-copper w-full px-4 py-2.5"
         :disabled="submitting"
       >
         {{ submitting ? 'Sending…' : 'Send Invitation' }}
