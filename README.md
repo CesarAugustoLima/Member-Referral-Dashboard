@@ -6,6 +6,8 @@ Completed take-home assessment: a referral system where users can invite members
 
 Original requirements are in [`REQUIREMENTS.md`](REQUIREMENTS.md).
 
+![Dashboard screenshot](assets/dashboard-screenshot.png)
+
 ---
 
 ## What's implemented
@@ -135,6 +137,7 @@ npm run build
 │       ├── stores/       # Pinia state
 │       └── types/        # TypeScript interfaces
 ├── docker-compose.yml
+├── assets/               # Dashboard screenshot
 ├── REQUIREMENTS.md       # Original assessment spec
 └── REVIEW_TASK.md        # Code review exercise
 ```

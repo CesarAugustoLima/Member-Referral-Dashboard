@@ -49,4 +49,5 @@ htmlcov/
 *.bak
 *.tmp
 *.png
+!assets/*.png
 __pycache__/
