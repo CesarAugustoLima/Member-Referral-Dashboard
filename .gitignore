@@ -1,0 +1,52 @@
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/.env
+frontend/.env.local
+
+# Backend
+backend/__pycache__/
+backend/*.pyc
+backend/*.pyo
+backend/*.pyd
+backend/.Python
+backend/env/
+backend/venv/
+backend/.venv/
+backend/*.db
+backend/*.sqlite3
+backend/.pytest_cache/
+backend/htmlcov/
+backend/.coverage
+backend/*.log
+backend/media/
+backend/staticfiles/
+
+# Docker
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Environment
+.env
+.env.local
+*.env
+
+# Testing
+.pytest_cache/
+coverage/
+.coverage
+htmlcov/
+
+# Misc
+*.bak
+*.tmp
+*.png
+__pycache__/
