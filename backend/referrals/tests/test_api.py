@@ -153,3 +153,35 @@ class ReferralAPITests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_410_GONE)
         self.assertEqual(response.data, {"error": "Invitation already used."})
 
+    def test_analytics_returns_zero_for_empty_database(self) -> None:
+        response = self.client.get(reverse("referral-analytics"))
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.data,
+            {
+                "total_invited": 0,
+                "invitations_sent": 0,
+                "joined": 0,
+                "conversion_rate": 0.0,
+            },
+        )
+
+    def test_analytics_returns_correct_counts(self) -> None:
+        create_referral(email="sent1@example.com", status=Referral.Status.INVITATION_SENT)
+        create_referral(email="sent2@example.com", status=Referral.Status.INVITATION_SENT)
+        create_referral(email="joined@example.com", status=Referral.Status.JOINED)
+        create_referral(email="declined@example.com", status=Referral.Status.DECLINED)
+        create_referral(
+            email="received@example.com",
+            status=Referral.Status.APPLICATION_RECEIVED,
+        )
+
+        response = self.client.get(reverse("referral-analytics"))
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["total_invited"], 5)
+        self.assertEqual(response.data["invitations_sent"], 2)
+        self.assertEqual(response.data["joined"], 1)
+        self.assertEqual(response.data["conversion_rate"], 20.0)
+

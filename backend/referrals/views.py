@@ -6,6 +6,7 @@ from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from .analytics import get_referral_analytics
 from .models import Referral
 from .serializers import ReferralPublicSerializer, ReferralSerializer
 
@@ -60,3 +61,8 @@ class ReferralViewSet(viewsets.ModelViewSet):
 
         serializer = ReferralPublicSerializer(referral)
         return Response(serializer.data)
+
+    @action(detail=False, methods=["get"])
+    def analytics(self, request) -> Response:
+        """Return aggregate referral metrics."""
+        return Response(get_referral_analytics())
