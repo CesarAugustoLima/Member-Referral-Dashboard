@@ -1,9 +1,13 @@
 """Database models for member referrals."""
 
+from datetime import timedelta
+
 from django.db import models
 from django.utils import timezone
 
 from .services import generate_token
+
+RESEND_COOLDOWN_SECONDS = 30
 
 
 class Referral(models.Model):
@@ -49,3 +53,25 @@ class Referral(models.Model):
         if self.last_sent_at is None:
             self.last_sent_at = timezone.now()
         super().save(*args, **kwargs)
+
+    def resend_error(self) -> str | None:
+        """Return an error message if resend is not allowed, otherwise None."""
+        if self.status != self.Status.INVITATION_SENT:
+            return "Invitation can only be resent while status is 'Invitation Sent'."
+
+        if self.last_sent_at is not None:
+            elapsed = timezone.now() - self.last_sent_at
+            if elapsed < timedelta(seconds=RESEND_COOLDOWN_SECONDS):
+                return "Cannot resend within 30 seconds"
+
+        return None
+
+    def resend(self) -> None:
+        """Rotate the invite token and update the last sent timestamp."""
+        error = self.resend_error()
+        if error:
+            raise ValueError(error)
+
+        self.token = generate_token()
+        self.last_sent_at = timezone.now()
+        self.save(update_fields=["token", "last_sent_at"])

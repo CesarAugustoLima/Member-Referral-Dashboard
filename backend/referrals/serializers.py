@@ -49,3 +49,12 @@ class ReferralSerializer(serializers.ModelSerializer):
             raise EmailAlreadyExistsError()
 
         return email
+
+
+class ReferralPublicSerializer(serializers.ModelSerializer):
+    """Public-facing referral fields for token lookup."""
+
+    class Meta:
+        model = Referral
+        fields = ["first_name", "last_name", "email"]
+

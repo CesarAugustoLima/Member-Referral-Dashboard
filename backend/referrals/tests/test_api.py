@@ -1,8 +1,10 @@
 """Tests for the referrals REST API."""
 
+from datetime import timedelta
 from unittest.mock import patch
 
 from django.urls import reverse
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.test import APITestCase
 
@@ -65,3 +67,89 @@ class ReferralAPITests(APITestCase):
         self.assertEqual(response.data["count"], 2)
         emails = {item["email"] for item in response.data["results"]}
         self.assertEqual(emails, {"alice@example.com", "bob@example.com"})
+
+    def test_resend_rejected_within_cooldown(self) -> None:
+        referral = create_referral(email="cooldown@example.com")
+
+        response = self.client.post(reverse("referral-resend", args=[referral.pk]))
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data, {"error": "Cannot resend within 30 seconds"})
+
+    @patch("referrals.views.time.sleep")
+    def test_resend_allowed_after_cooldown(self, mock_sleep) -> None:
+        referral = create_referral(email="resend@example.com")
+        referral.last_sent_at = timezone.now() - timedelta(seconds=31)
+        referral.save(update_fields=["last_sent_at"])
+
+        response = self.client.post(reverse("referral-resend", args=[referral.pk]))
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        mock_sleep.assert_called_once()
+
+    @patch("referrals.views.time.sleep")
+    def test_resend_rotates_token(self, mock_sleep) -> None:
+        referral = create_referral(email="rotate@example.com")
+        old_token = referral.token
+        referral.last_sent_at = timezone.now() - timedelta(seconds=31)
+        referral.save(update_fields=["last_sent_at"])
+
+        response = self.client.post(reverse("referral-resend", args=[referral.pk]))
+        referral.refresh_from_db()
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertNotEqual(referral.token, old_token)
+
+        lookup_url = reverse("referral-lookup")
+        old_lookup = self.client.get(lookup_url, {"token": old_token})
+        new_lookup = self.client.get(lookup_url, {"token": referral.token})
+
+        self.assertEqual(old_lookup.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(new_lookup.status_code, status.HTTP_200_OK)
+
+    def test_resend_rejected_when_status_is_not_invitation_sent(self) -> None:
+        referral = create_referral(
+            email="joined@example.com",
+            status=Referral.Status.JOINED,
+        )
+
+        response = self.client.post(reverse("referral-resend", args=[referral.pk]))
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("error", response.data)
+
+    def test_lookup_returns_referral_for_valid_token(self) -> None:
+        referral = create_referral(email="lookup@example.com")
+
+        response = self.client.get(
+            reverse("referral-lookup"),
+            {"token": referral.token},
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["email"], "lookup@example.com")
+        self.assertNotIn("id", response.data)
+        self.assertNotIn("status", response.data)
+
+    def test_lookup_rejects_invalid_token(self) -> None:
+        response = self.client.get(
+            reverse("referral-lookup"),
+            {"token": "invalid-token"},
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_lookup_rejects_token_after_status_advances(self) -> None:
+        referral = create_referral(
+            email="used@example.com",
+            status=Referral.Status.JOINED,
+        )
+
+        response = self.client.get(
+            reverse("referral-lookup"),
+            {"token": referral.token},
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_410_GONE)
+        self.assertEqual(response.data, {"error": "Invitation already used."})
+
