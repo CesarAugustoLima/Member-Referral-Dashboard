@@ -1,191 +1,181 @@
-# Member Referral Dashboard - Take-Home Assessment
+# Member Referral Dashboard
 
-## Overview
+Completed take-home assessment: a referral system where users can invite members, track invitation status, resend invitations, and view analytics.
 
-Build a member referral system where users can invite others, track invitation status, and view analytics.
+**Stack:** Django REST Framework + PostgreSQL (backend), Vue 3 + TypeScript + Pinia + Tailwind CSS (frontend).
 
-**Note**: You don't need to actually send emails - assume the invitation is "sent" by creating an Invitation database record.
+Original requirements are in [`REQUIREMENTS.md`](REQUIREMENTS.md).
 
-**Estimated Time**: 2-3 hours at most
+---
 
-Use whatever tools, libraries, and references you'd normally reach for while building.
+## What's implemented
 
-## What You'll Build
+### Backend
+- `Referral` model with email normalization (trim + lowercase) and secure invite tokens
+- REST API for listing, creating, updating, and deleting referrals
+- Resend action with server-side 30-second cooldown and token rotation
+- Public token lookup endpoint (safe fields only)
+- Analytics endpoint with documented metric definitions
+- Django admin for inspecting referrals and advancing status manually
+- Integration tests for email uniqueness, resend cooldown, token lifecycle, and analytics
 
-- **Invitation Form**: Create referrals with name and email
-- **Referrals List**: View all referrals with status indicators
-- **Status Tracking**: Track referrals through their lifecycle
-- **Resend Functionality**: Ability to resend invitations with business logic
-- **Invite Token**: A non-guessable token per invite (see `REQUIREMENTS.md`)
-- **Analytics API Endpoint**: Display basic metrics about referrals
+### Frontend
+- Invitation form with validation and API error handling
+- Referrals list with status badges and resend (with client-side cooldown countdown)
+- Analytics cards
+- Success toasts for invite and resend actions
+- Styling aligned with [10 East](https://10east.co/home) brand tokens (typography, copper palette)
 
-You'll also complete **`REVIEW_TASK.md`** (a quick code-review exercise). Include tests - see `REQUIREMENTS.md` for details.
+### Code review
+- See [`REVIEW_TASK.md`](REVIEW_TASK.md) for the resend endpoint review exercise.
 
-## Prerequisites
+---
 
-- **Docker** and **Docker Compose** installed
-- **Node.js** (v18+) and **npm** installed
-- **Git** for version control
-- Basic knowledge of Vue 3 or a similar frontend framework, TypeScript, Django, and REST APIs
+## Quick start
 
-## Project Structure
+### Prerequisites
+- Docker and Docker Compose
+- Node.js 18+ and npm
 
-```
-assessment/
-├── frontend/          # Vue 3 + TypeScript + Vite
-│   ├── src/
-│   │   ├── components/   # Build your components here
-│   │   ├── stores/       # Pinia stores (if used)
-│   │   ├── types/        # TypeScript interfaces
-│   │   └── App.vue       # Main app component
-│   └── package.json
-├── backend/           # Django + DRF
-│   ├── config/           # Django settings
-│   ├── referrals/        # Referrals app (add your code here)
-│   └── requirements.txt
-├── docker-compose.yml # PostgreSQL + backend setup
-└── REQUIREMENTS.md    # Detailed feature requirements
-```
-
-## Setup Instructions
-
-### 1. Download/clone and Navigate
+### 1. Backend
 
 ```bash
-cd assessment
-```
-
-### 2. Start Database and Backend
-
-```bash
-# Start PostgreSQL and Django backend
 docker compose up -d
-
-# Run initial migrations
 docker compose exec backend python manage.py migrate
-
-# Verify backend is running (Django welcome page until you wire up routes)
-curl http://localhost:8000/
 ```
 
-The backend will be available at `http://localhost:8000`
+Backend runs at **http://localhost:8000**
 
-### 3. Set Up Frontend
+Verify the API:
+
+```bash
+curl http://localhost:8000/api/referrals/
+```
+
+Optional — create an admin user for Django admin (`/admin/`):
+
+```bash
+docker compose exec backend python manage.py createsuperuser
+```
+
+### 2. Frontend
 
 ```bash
 cd frontend
-
-# Install dependencies
 npm install
-
-# Copy environment file
 cp .env.example .env
-
-# Start development server
 npm run dev
 ```
 
-The frontend will be available at `http://localhost:5173`
+Frontend runs at **http://localhost:5173**
 
-## Development Workflow
+Ensure `.env` contains:
 
-### Backend Development
-
-```bash
-# Create migrations after model changes
-docker compose exec backend python manage.py makemigrations
-
-# Run migrations
-docker compose exec backend python manage.py migrate
-
-# Access Django shell
-docker compose exec backend python manage.py shell
-
-# View logs
-docker compose logs -f backend
-
-# Restart backend after code changes
-docker compose restart backend
+```
+VITE_API_URL=http://localhost:8000/api
 ```
 
-### Frontend Development
+---
 
-The Vite dev server has hot reload enabled - changes will appear automatically.
+## API
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/referrals/` | List referrals (paginated) |
+| `POST` | `/api/referrals/` | Create referral |
+| `GET` | `/api/referrals/{id}/` | Retrieve referral |
+| `PATCH` | `/api/referrals/{id}/` | Update referral |
+| `DELETE` | `/api/referrals/{id}/` | Delete referral |
+| `POST` | `/api/referrals/{id}/resend/` | Resend invitation |
+| `GET` | `/api/referrals/lookup/?token=...` | Public token lookup |
+| `GET` | `/api/referrals/analytics/` | Referral metrics |
+
+### Analytics definitions
+
+| Metric | Definition |
+|--------|------------|
+| **Total Invited** | All referrals ever created |
+| **Invitations Sent** | Referrals with status `invitation_sent` |
+| **Joined** | Referrals with status `joined` |
+| **Conversion Rate** | `joined / total_invited × 100` (0% when empty) |
+
+### Token behavior
+- Generated with `secrets.token_urlsafe(32)` on create
+- Rotated on resend (previous token stops working)
+- Invalid once status advances past `invitation_sent`
+- No time-based expiry
+
+---
+
+## Testing
 
 ```bash
-# Run from frontend/ directory
-npm run dev
+docker compose exec backend python manage.py test referrals
+```
 
-# Build for production (helpful to check typescript errors!)
+Frontend type-check and production build:
+
+```bash
+cd frontend
 npm run build
 ```
 
-### Database Access
+---
 
-```bash
-# Access PostgreSQL directly
-docker compose exec db psql -U postgres -d referrals
+## Project structure
+
+```
+├── backend/
+│   ├── config/           # Django settings
+│   └── referrals/        # Models, API, tests, admin
+├── frontend/
+│   └── src/
+│       ├── api/          # Axios client and API calls
+│       ├── components/   # Vue UI components
+│       ├── stores/       # Pinia state
+│       └── types/        # TypeScript interfaces
+├── docker-compose.yml
+├── REQUIREMENTS.md       # Original assessment spec
+└── REVIEW_TASK.md        # Code review exercise
 ```
 
-## Key Requirements
+---
 
-See `REQUIREMENTS.md` for detailed feature specifications.
-
-## Technology Stack
-
-### Frontend
-
-- **Vue 3** with Composition API
-- **TypeScript** (no vanilla JavaScript please)
-- **Vite** for build tooling/serving frontend
-- **Pinia** for state management (if needed)
-- **Tailwind CSS** for styling
-- **Axios** for API calls (if not using `fetch`)
+## Development notes
 
 ### Backend
 
-- **Django 5.1**
-- **Django REST Framework**
-- **PostgreSQL** via Docker
-- **CORS** configured for local development
+```bash
+# Migrations
+docker compose exec backend python manage.py makemigrations
+docker compose exec backend python manage.py migrate
+
+# Logs
+docker compose logs -f backend
+```
+
+Referral status can be advanced via Django admin to test token invalidation and analytics (no status-change UI in the dashboard by design).
+
+### Frontend
+
+The Vite dev server hot-reloads on save.
+
+---
 
 ## Troubleshooting
 
-### Backend won't start
-
+**Backend won't start**
 ```bash
-# Check logs
 docker compose logs backend
-
-# Rebuild containers
-docker compose down
-docker compose up --build
+docker compose down && docker compose up --build
 ```
 
-### Database connection errors
-
+**Database connection errors**
 ```bash
-# Ensure database is healthy
 docker compose ps
-
-# Reset database (caution: deletes all data)
-docker compose down -v
-docker compose up -d
+docker compose down -v && docker compose up -d   # resets data
 ```
 
-### Frontend can't connect to backend
-
-- Verify backend is running: `curl http://localhost:8000/`
-- Check `.env` file has correct `VITE_API_URL=http://localhost:8000/api`
-- Check CORS settings in Django `settings.py`
-
-
-## Questions or Issues?
-
-If you encounter any setup issues or have questions about requirements:
-
-1. Check the troubleshooting section above
-2. Review `REQUIREMENTS.md` for detailed specifications
-3. Contact your interviewer for clarification
-
-Good luck! We're excited to see what you build.
+**Frontend can't reach API**
+- Confirm backend is up: `curl http://localhost:8000/api/referrals/`
+- Check `frontend/.env` has `VITE_API_URL=http://localhost:8000/api`
